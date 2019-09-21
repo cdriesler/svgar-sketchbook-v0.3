@@ -25,7 +25,7 @@ export default Vue.extend({
   },
   methods: {
     onClick(event: any): void {
-      this.$socket.emit('message', 'HOWDY');
+      this.$socket.client.emit('message', 'HOWDY');
     }
   }
 });
