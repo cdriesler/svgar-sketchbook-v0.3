@@ -15,6 +15,11 @@ app.get("/", (req: any, res: any) => {
 
 io.on("connection", (socket: any) => {
     console.log("connection!");
+
+    socket.on("message", (message: string) => {
+        console.log("Received: " + message);
+        socket.emit("testFromApi", message + " PARTNER")
+    })
 });
 
 // start our simple server up on localhost:3000
