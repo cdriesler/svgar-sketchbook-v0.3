@@ -3,14 +3,14 @@
     <div class="monads">
       <router-view/>
     </div>
-    <div class="controls">
+    <div class="controls" v-if="!this.$store.state.isHome">
       <div class="controls__flank">
         <i class="material-icons-sharp">account_box</i> <!-- cloud_off -->
       </div>
       <div class="controls__flank">
         <i class="material-icons-sharp">assessment</i>
       </div>
-      <div class="controls__flank">
+      <div class="controls__flank" @click="onGoHome">
         <i class="material-icons md-24">apps</i>
       </div>
       <div class="controls__flank">
@@ -93,3 +93,14 @@
 
 .material-icons.md-24 { font-size: 36px; }
 </style>
+
+<script lang="ts">
+import Vue from 'vue'
+export default Vue.extend({
+  methods: {
+    onGoHome(): void {
+      this.$router.push({name: 'home'});
+    }
+  }
+})
+</script>

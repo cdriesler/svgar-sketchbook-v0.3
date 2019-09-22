@@ -2,7 +2,7 @@
   "name": "opaque-api",
   "version": "0.0.1",
   "description": "",
-  "main": "server.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
     "watch-ts": "tsc -w",

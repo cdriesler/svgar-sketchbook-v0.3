@@ -1,16 +1,12 @@
 <template>
 <div class="content">
-  <div class="home">
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-    <div></div>
-  </div>
+<div class="home">
+	<monad-box 
+	v-for='(monad, index) in manifest' 
+	:key="`${index}_${monad.name}`"
+	:name="monad.name">
+	</monad-box>
+</div>
 </div>
 
 </template>
@@ -19,11 +15,10 @@
 .content {
   width: 100%;
   height: 100%;
-
-  overflow-y: auto;
 }
-
 .home {
+  overflow-y: auto;
+
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   grid-auto-rows: 1fr;
@@ -44,27 +39,28 @@
 }
 
 /* Just to make the grid visible */
-
-.home > * {
-  box-sizing: border-box;
-  border: 2px solid black;
-}
 </style>
 
 <script lang="ts">
 import Vue from 'vue';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+import MonadBox from '@/components/MonadBox.vue';
+import MonadManifest from './../registrar/MonadManifest';
 
 export default Vue.extend({
-  name: 'home',
-  components: {
-    HelloWorld,
-  },
-  created() {
-    this.$store.commit("toggleOnHome");
-  },
-  destroyed() {
-    this.$store.commit("toggleOnHome");
-  }
+	name: 'home',
+	components: {
+		MonadBox,
+	},
+	data() {
+		return {
+			manifest: MonadManifest,
+		}
+	},
+	created() {
+		this.$store.commit("toggleOnHome");
+	},
+	destroyed() {
+		this.$store.commit("toggleOnHome");
+	}
 });
 </script>
