@@ -8,7 +8,7 @@ import io from 'socket.io-client';
 
 const socket = io('http://192.168.43.84:3000');
 
-Vue.use(VueSocketIOExt, socket);
+Vue.use(VueSocketIOExt, socket, { store });
 
 Vue.config.productionTip = false;
 

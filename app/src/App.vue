@@ -16,7 +16,7 @@
       <div class="controls__flank">
         <i class="material-icons-sharp">casino</i>
       </div>
-      <div class="controls__flank">
+      <div class="controls__flank" @click="onGoToDemo">
         <i class="material-icons-sharp">crop_din</i>
       </div>
     </div>    
@@ -100,6 +100,9 @@ export default Vue.extend({
   methods: {
     onGoHome(): void {
       this.$router.push({name: 'home'});
+    },
+    onGoToDemo(): void {
+      this.$router.push("/demo");
     }
   }
 })

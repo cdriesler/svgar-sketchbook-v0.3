@@ -1,19 +1,22 @@
 <template>
     <div id="demo">
         <div class="box">
-            <div class="white">
+            <div class="white" v-html="svg">
             </div>
+            <br>
+            {{truncateCoordinate(this.$store.state.coordinate)}}
         </div>
         <div class="box active">
             <div 
             class="black"
+            ref="svgar"
             @mousedown="onDown"
             @mousemove="onMove"
             @mouseup="onUp"
             @touchstart="onDown"
             @touchmove="onMove"
             @touchend="onUp">
-            </div>
+            </div>   
         </div>
     </div>
 </template>
@@ -61,21 +64,43 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import * as Svgar from 'svgar';
+
 export default Vue.extend({
     data() {
         return {
             coordinate: [] as number[],
+            size: 0,
         }
     },
     created() {
         this.$store.commit("toggleOnHome");
+    },
+    mounted() {
+        let el = (<Element>this.$refs.svgar);
+        this.size = el == undefined ? 0 : el.clientWidth;
     },
     destroyed() {
         this.$store.commit("toggleOnHome");
     },
     sockets: {
         update_coordinate(coordinate: number[]): void {
-            console.log(coordinate);
+            //console.log(this.$store.state.coordinate);
+        }
+    },
+    computed: {
+        svg(): string {
+            let dot = new Svgar.Drawing("dot");
+
+            let dotGeo = new Svgar.Layer("dot_main").AddTag("default");
+            dotGeo.AddGeometry(new Svgar.CircleBuilder(this.$store.state.coordinate, 0.02).Build());
+
+            let dotState = new Svgar.State("main").Target("dot_style", "default");
+            dotState.AddStyle(new Svgar.StyleBuilder("dot_style").Stroke("#000000").Fill("#000000").StrokeWidth("2px").Build());
+
+            dot.AddLayer(dotGeo).AddState(dotState);
+
+            return dot.Compile("main", this.size, this.size);
         }
     },
     methods: {
@@ -105,6 +130,12 @@ export default Vue.extend({
 
             return [+x, +y];
         },
+        truncateCoordinate(c: number[]): string {
+            if (c.length != 2) {
+                return '';
+            }
+            return (c[0] * 100).toString().substr(0, 5) + ', ' + (c[1] * 100).toString().substr(0, 5);
+        }
     }
 })
 </script>

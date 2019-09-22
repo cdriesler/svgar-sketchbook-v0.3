@@ -28,6 +28,7 @@ io.on("connection", (socket: any) => {
     socket.on("coordinate", (c: CoordinatePayload) => {
         console.log(c.coordinates);
         socket.broadcast.emit("update_coordinate", c.coordinates);
+        socket.emit("update_coordinate", c.coordinates)
     })
 });
 
