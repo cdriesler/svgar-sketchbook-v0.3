@@ -5,7 +5,14 @@
             </div>
         </div>
         <div class="box active">
-            <div class="black">
+            <div 
+            class="black"
+            @mousedown="onDown"
+            @mousemove="onMove"
+            @mouseup="onUp"
+            @touchstart="onDown"
+            @touchmove="onMove"
+            @touchend="onUp">
             </div>
         </div>
     </div>
@@ -34,7 +41,7 @@
 }
 
 .active {
-    border-top: 2px dashed black;
+    border-top: 1px solid black;
 }
 
 .box > * {
@@ -55,11 +62,49 @@
 <script lang="ts">
 import Vue from 'vue'
 export default Vue.extend({
+    data() {
+        return {
+            coordinate: [] as number[],
+        }
+    },
     created() {
         this.$store.commit("toggleOnHome");
     },
     destroyed() {
         this.$store.commit("toggleOnHome");
+    },
+    sockets: {
+        update_coordinate(coordinate: number[]): void {
+            console.log(coordinate);
+        }
+    },
+    methods: {
+        onDown(event: TouchEvent): void {
+            let coord = this.normalizeEventLocation(event);
+            //console.log(coord);
+            this.$socket.client.emit('coordinate', {coordinates: coord});
+        },
+        onMove(event: TouchEvent): void {
+            let coord = this.normalizeEventLocation(event);
+            //console.log(coord);
+            this.$socket.client.emit('coordinate', {coordinates: coord});
+        },
+        onUp(): void {
+
+        },
+        normalizeEventLocation(event: TouchEvent): number[] {
+            if (event.targetTouches.length <= 0 || event == undefined) {
+                return [];
+            }
+
+            let t = event.targetTouches[0];
+            let div: DOMRect = (<any>event).target.getBoundingClientRect();
+
+            let x = (t.pageX - div.left) / div.width;
+            let y = 1 - ((t.pageY - div.top) / div.height);
+
+            return [+x, +y];
+        },
     }
 })
 </script>

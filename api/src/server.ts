@@ -7,6 +7,10 @@ app.set("port", 3000);
 let http = require("http").Server(app);
 let io = require("socket.io")(http);
 
+interface CoordinatePayload {
+    coordinates: number[];
+}
+
 // simple '/' endpoint sending a Hello World
 // response
 app.get("/", (req: any, res: any) => {
@@ -19,6 +23,11 @@ io.on("connection", (socket: any) => {
     socket.on("message", (message: string) => {
         console.log("Received: " + message);
         socket.emit("testFromApi", message + " PARTNER")
+    });
+
+    socket.on("coordinate", (c: CoordinatePayload) => {
+        console.log(c.coordinates);
+        socket.broadcast.emit("update_coordinate", c.coordinates);
     })
 });
 
