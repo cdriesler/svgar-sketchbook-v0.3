@@ -78,7 +78,7 @@ export default Vue.extend({
     },
     mounted() {
         let el = (<Element>this.$refs.svgar);
-        this.size = el == undefined ? 0 : el.clientWidth;
+        this.size = el == undefined ? 0 : el.clientWidth - 4;
     },
     destroyed() {
         this.$store.commit("toggleOnHome");
