@@ -3,8 +3,6 @@
         <div class="box">
             <div class="white" v-html="svg">
             </div>
-            <br>
-            {{truncateCoordinate(this.$store.state.coordinate)}}
         </div>
         <div class="box active">
             <div 
@@ -64,7 +62,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import * as Svgar from 'svgar';
+import Svgar from 'svgar';
 
 export default Vue.extend({
     data() {
@@ -90,17 +88,37 @@ export default Vue.extend({
     },
     computed: {
         svg(): string {
-            let dot = new Svgar.Drawing("dot");
+            let dots = new Svgar.Cube()
 
-            let dotGeo = new Svgar.Layer("dot_main").AddTag("default");
-            dotGeo.AddGeometry(new Svgar.CircleBuilder(this.$store.state.coordinate, 0.02).Build());
+            let dot = new Svgar.Slab('dot');
 
-            let dotState = new Svgar.State("main").Target("dot_style", "default");
-            dotState.AddStyle(new Svgar.StyleBuilder("dot_style").Stroke("#000000").Fill("#000000").StrokeWidth("2px").Build());
+            let dotGeo = new Svgar.Builder.Circle(this.$store.state.coordinate[0], this.$store.state.coordinate[1], this.$store.state.coordinate[0]).build()
+            dotGeo.setTag('circle');
+            dot.addPath(dotGeo);
 
-            dot.AddLayer(dotGeo).AddState(dotState);
+            dot.setAllStyles([
+                {
+                    name: 'filled',
+                    attributes: {
+                        "stroke": "black",
+                        "fill": "black",
+                        "stroke-width": "0px"
+                    }
+                }
+            ]);
 
-            return dot.Compile("main", this.size, this.size);
+            dot.setAllStates([
+                {
+                    name: 'default',
+                    styles: {
+                        "circle": "filled",
+                    }
+                }
+            ]);
+
+            dots.slabs.push(dot);
+
+            return dots.compile(this.size, this.size + 1);
         }
     },
     methods: {

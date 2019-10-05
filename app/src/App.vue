@@ -3,7 +3,7 @@
     <div class="monads">
       <router-view/>
     </div>
-    <div class="controls" v-if="!this.$store.state.isHome">
+    <div class="controls">
       <div class="controls__flank">
         <i class="material-icons-sharp">account_box</i> <!-- cloud_off -->
       </div>
