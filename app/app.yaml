@@ -4,10 +4,10 @@ threadsafe: true
 service: 'app'
 
 handlers:
-- url: /
+- url: /(.*\..+)$ 
+  static_files: dist/\1
+  upload: dist/(.*\..+)$
+
+- url: /.*
   static_files: dist/index.html
   upload: dist/index.html
-
-- url: /(.*)
-  static_files: dist/index.html
-  upload: dist/(.*)
