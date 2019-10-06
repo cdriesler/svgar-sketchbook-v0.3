@@ -168,6 +168,15 @@ export default Vue.extend({
         },
         updatePosition(): void {
             this.location = (this.location + 1) % 360;
+            if (this.location % 45 == 0) {
+                if (this.location % 180 == 0) {
+                    navigator.vibrate(100);
+                }
+                else {
+                    navigator.vibrate(25);
+                }
+                
+            }
             let rad = this.location * (Math.PI / 180);
             this.boxX = Math.cos(rad);
             this.boxY = Math.sin(rad);
@@ -179,6 +188,7 @@ export default Vue.extend({
         },
         onMove(event: TouchEvent): void {
             let coord = this.normalizeEventLocation(event);
+            //navigator.vibrate(50);
             //console.log(coord);
             this.$socket.client.emit('coordinate', {coordinates: coord});
         },
