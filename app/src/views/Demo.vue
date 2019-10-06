@@ -68,11 +68,15 @@ export default Vue.extend({
     data() {
         return {
             coordinate: [] as number[],
+            location: 0,
+            boxX: 1,
+            boxY: 0,
             size: 0,
         }
     },
     created() {
         this.$store.commit("toggleOnHome");
+        this.startSpin();
     },
     mounted() {
         let el = (<Element>this.$refs.svgar);
@@ -92,9 +96,28 @@ export default Vue.extend({
 
             let dot = new Svgar.Slab('dot');
 
-            let dotGeo = new Svgar.Builder.Circle(this.$store.state.coordinate[0], this.$store.state.coordinate[1], this.$store.state.coordinate[0]).build()
+            let dotGeo = new Svgar.Builder.Circle(this.$store.state.coordinate[0] || 0, this.$store.state.coordinate[1] || 0, 0.5).build()
             dotGeo.setTag('circle');
+            dotGeo.setElevation(0);
             dot.addPath(dotGeo);
+
+            let dotOutline = new Svgar.Builder.Circle(this.$store.state.coordinate[0] || 0, this.$store.state.coordinate[1] || 0, 0.5).build();
+            dotOutline.setTag('outline');
+            dotOutline.setElevation(2);
+            dot.addPath(dotOutline);
+
+            let size = 0.5;
+            let square = new Svgar.Builder.Polyline(this.boxX + size, this.boxY - size)
+            .lineTo(this.boxX + size, this.boxY + size)
+            .lineTo(this.boxX - size, this.boxY + size)
+            .lineTo(this.boxX - size, this.boxY - size)
+            .close()
+            .build();
+            square.setTag('square');
+            square.setElevation(1);
+            dot.addPath(square);
+
+            dots.frame([0, 0], 3, 3);
 
             dot.setAllStyles([
                 {
@@ -102,7 +125,23 @@ export default Vue.extend({
                     attributes: {
                         "stroke": "black",
                         "fill": "black",
-                        "stroke-width": "0px"
+                        "stroke-width": "2px"
+                    },
+                },
+                {
+                    name: 'frame',
+                    attributes: {
+                        "stroke": "black",
+                        "fill": "white",
+                        "stroke-width": "2px",
+                    }
+                },
+                {
+                    name: 'outlined',
+                    attributes: {
+                        "stroke": "black",
+                        "fill": "none",
+                        "stroke-width": "2px"
                     }
                 }
             ]);
@@ -112,6 +151,8 @@ export default Vue.extend({
                     name: 'default',
                     styles: {
                         "circle": "filled",
+                        "square": "frame",
+                        "outline": "outlined"
                     }
                 }
             ]);
@@ -122,6 +163,15 @@ export default Vue.extend({
         }
     },
     methods: {
+        startSpin(): void {
+            setInterval(() => this.updatePosition(), 20);
+        },
+        updatePosition(): void {
+            this.location = (this.location + 1) % 360;
+            let rad = this.location * (Math.PI / 180);
+            this.boxX = Math.cos(rad);
+            this.boxY = Math.sin(rad);
+        },
         onDown(event: TouchEvent): void {
             let coord = this.normalizeEventLocation(event);
             //console.log(coord);
@@ -146,7 +196,7 @@ export default Vue.extend({
             let x = (t.pageX - div.left) / div.width;
             let y = 1 - ((t.pageY - div.top) / div.height);
 
-            return [+x, +y];
+            return [(+x - 0.5) * 3, (+y - 0.5) * 3];
         },
         truncateCoordinate(c: number[]): string {
             if (c.length != 2) {
