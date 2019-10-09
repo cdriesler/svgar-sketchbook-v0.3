@@ -1,6 +1,5 @@
 <template>
     <div id="monad-container">
-        {{currentMonad}}
         <component :is="currentMonad"> </component>
     </div>
 </template>
@@ -28,8 +27,13 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import bubble from './monads/bubble.vue';
+
 export default Vue.extend({
     name: 'monad-container',
+    components: {
+        bubble
+    },
     computed: {
         currentMonad(): string {
             return this.$route.params.name
