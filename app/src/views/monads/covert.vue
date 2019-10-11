@@ -23,6 +23,10 @@
     height: 400px;
 }
 
+.white {
+    outline: 2px solid white;
+}
+
 .black {
     outline: 2px solid black;
     outline-offset: -2px;
@@ -39,6 +43,7 @@ export default Vue.extend({
     data() {
         return {
             offset: 0,
+            w: 0.013,
         }
     },
     mounted() {
@@ -48,6 +53,9 @@ export default Vue.extend({
         svg(): string {
             let dwg = new Svgar.Cube();
 
+            let block = new Svgar.Slab("blocks");
+            let r = this.makeRectangle(0.5, 0.5, 0.1, 0.8, 30);
+
             let front = new Svgar.Slab("front");
 
             let circle = new Svgar.Builder.Circle(0.25, 0.25, 0.26).build();
@@ -55,8 +63,8 @@ export default Vue.extend({
             background.setElevation(-1);
             background.setTag("background");
 
-            front.setAllGeometry([...this.getVerticalStripes(0.01, this.offset + 1), background]);
-            front.clipWith(circle);
+            front.setAllGeometry([...this.getVerticalStripes(this.w, this.offset + 1), background]);
+            front.clipWith(r);
             front.setElevation(2);
 
             front.setAllStyles([
@@ -90,13 +98,13 @@ export default Vue.extend({
 
             let back = new Svgar.Slab("back");
 
-            let screen: SvgarPath[] = this.getHorizontalStripes(0.01, 0);
+            let screen: SvgarPath[] = this.getHorizontalStripes(this.w, 0);
             screen.forEach(x => {
                 x.setElevation(5);
                 x.setTag("screen");
             });
 
-            back.setAllGeometry([...this.getVerticalStripes(0.01, this.offset), ...screen]);
+            back.setAllGeometry([...this.getVerticalStripes(this.w, this.offset), ...screen]);
 
             back.setAllStyles([
                 {
@@ -170,6 +178,34 @@ export default Vue.extend({
             }
 
             return paths;
+        },
+        makeRectangle(x: number, y: number, w: number, h: number, rot: number): SvgarPath {
+            const rad = rot * (Math.PI / 180);
+
+            const pts: number[][] = [
+                [x - (w / 2), y - (h / 2)],
+                [x + (w / 2), y - (h / 2)],
+                [x + (w / 2), y + (h / 2)],
+                [x - (w / 2), y + (h / 2)],
+            ];
+
+            let r: number[][] = [];
+
+            pts.forEach(c => {
+                r.push([
+                    ((c[0] - x) * Math.cos(rad)) - ((c[1] - y) * Math.sin(rad)) + x,
+                    ((c[1] - y) * Math.cos(rad)) + ((c[0] - x) * Math.sin(rad)) + y
+                ]);
+            })
+
+            let rect = new Svgar.Builder.Polyline(r[0][0], r[0][1])
+                .lineTo(r[1][0], r[1][1])
+                .lineTo(r[2][0], r[2][1])
+                .lineTo(r[3][0], r[3][1])
+                .close()
+                .build();
+
+            return rect;
         }
     }
 })
