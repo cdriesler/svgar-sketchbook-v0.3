@@ -29,12 +29,14 @@
 import Vue from 'vue'
 import bubble from './monads/bubble.vue';
 import covert from './monads/covert.vue';
+import useful from './monads/useful.vue';
 
 export default Vue.extend({
     name: 'monad-container',
     components: {
         bubble,
-        covert
+        covert,
+        useful
     },
     computed: {
         currentMonad(): string {

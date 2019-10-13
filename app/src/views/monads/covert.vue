@@ -92,10 +92,13 @@ export default Vue.extend({
             background.setTag("background");
 
             let block = new Svgar.Slab("blocks");
+
+            let rectClip = new Svgar.Slab("rclip");
             let r = this.rectangle as Rectangle;
             let rect = this.makeRectangle(r.x, r.y, r.w, r.h, r.rot);
+            rectClip.addPath(rect);
 
-            block.clipWith(rect);
+            block.clipWith(rectClip);
             block.setElevation(2);
 
             block.setAllStyles([
@@ -131,11 +134,13 @@ export default Vue.extend({
 
             let front = new Svgar.Slab("front");
 
+            let circleClip = new Svgar.Slab("circleClip");
             const c = this.circle as Circle;
             let circle = new Svgar.Builder.Circle(c.x, c.y, c.r).build();
+            circleClip.addPath(circle);
 
             front.setAllGeometry([...this.getVerticalStripes(this.w, this.offset + 1), background]);
-            front.clipWith(circle);
+            front.clipWith(circleClip);
             front.setElevation(2);
 
             front.setAllStyles([
