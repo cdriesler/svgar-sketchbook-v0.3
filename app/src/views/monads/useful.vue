@@ -47,8 +47,8 @@ export default Vue.extend({
         return {
             s: 0,
             cache: "",
-            svgar: {} as Svgar.Cube,
-            svgarGuide: {} as Svgar.Slab,
+            svgar: {} as any,
+            svgarGuide: {} as any,
             dotX: 0,
             dotY: 0,
             lineStartX: 0,
@@ -99,8 +99,8 @@ export default Vue.extend({
             console.log("Leave!");
         },
         onCommitDot(event: MouseEvent): void {
-            let x = (this.dotX - (document.querySelector("svg")).getBoundingClientRect().left) / 400;
-            let y = (this.dotY - (document.querySelector("svg")).getBoundingClientRect().top) / 400;
+            let x = (this.dotX - (document.querySelector("svg"))!.getBoundingClientRect().left) / 400;
+            let y = (this.dotY - (document.querySelector("svg"))!.getBoundingClientRect().top) / 400;
 
             this.lineStartX = (x * 2) - 1 + 0.02;
             this.lineEndX = this.lineStartX;
@@ -115,8 +115,8 @@ export default Vue.extend({
 
             console.log("move");
 
-            let x = (event.pageX - (document.querySelector("svg")).getBoundingClientRect().left) / 400;
-            let y = (event.pageY - (document.querySelector("svg")).getBoundingClientRect().top) / 400;
+            let x = (event.pageX - (document.querySelector("svg"))!.getBoundingClientRect().left) / 400;
+            let y = (event.pageY - (document.querySelector("svg"))!.getBoundingClientRect().top) / 400;
 
             //this.lineEndX = (x * 2) - 1;
             this.lineEndY = ((y * 2) - 1) * -1;
