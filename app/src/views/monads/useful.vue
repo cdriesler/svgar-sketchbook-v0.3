@@ -2,7 +2,7 @@
     <div id="useful">
         <div class="dot" v-if="showDot" :style="{left: dotX + 'px', top: dotY + 'px'}">
         </div>
-        <div class="box" ref="svgar" v-html="svg">
+        <div class="box" ref="svgar" v-html="svg" @mousemove="onMoveLine" @click="onAttemptMakeDesks">
         </div>
         <br>
         <button @click="startListen"> LISTEN </button>
@@ -48,90 +48,40 @@ export default Vue.extend({
     data() {
         return {
             s: 0,
+            cache: "",
             svgar: {} as Svgar.Cube,
+            svgarGuide: {} as Svgar.Slab,
             dotX: 0,
             dotY: 0,
+            lineStartX: 0,
+            lineStartY: 0,
+            lineEndX: 0,
+            lineEndY: 0,
             showDot: false,
+            lockDot: false,
+            lastMove: 0,
         }
     },
     created() {
-        let box = new Svgar.Cube();
-        box.frame([0, 0], 2.1, 2.1);
 
-        let walls = new Svgar.Slab("wall");
-        const o = 0.1;
-
-        walls.addPath(new Svgar.Builder.Polyline(1, 1)
-            .lineTo(1, -1)
-            .lineTo(-1, -1)
-            .lineTo(-1, 1)
-            .lineTo(-0.2, 1)
-            .lineTo(-0.2, 1 - o)
-            .lineTo(-1 + o, 1 - o)
-            .lineTo(-1 + o, -1 + o)
-            .lineTo(1 - o, -1 + o)
-            .lineTo(1 - o, 1 - o)
-            .lineTo(0.2, 1 - o)
-            .lineTo(0.2, 1)
-            .lineTo(1, 1)
-            .close()
-            .build());
-        
-        let guide = new Svgar.Builder.Polyline(-1 + o, -1 + o).lineTo(1 - o, -1 + o).build();
-        guide.setTag("guide");
-        guide.setElevation(2);
-        guide.attach("mouseenter", this.onEdgeHover);
-        guide.attach("mouseleave", this.onEdgeLeave);
-        guide.attach("mousemove", this.onEdgeMove);
-        walls.addPath(guide);
-
-        walls.setAllStyles([
-            {
-            name: "default",
-            attributes: {
-                "stroke": "black",
-                "stroke-width": "1.5px",
-                "fill": "gainsboro",
-                }
-            },
-            {
-                name: "guide",
-                attributes: {
-                    "stroke": "black",
-                    "stroke-width": "1.5px",
-                }
-            },
-            {
-                name: "guide:hover",
-                attributes: {
-                    "stroke": "black",
-                    "stroke-width": "4px",
-                    "cursor": "pointer"
-                }
-            }
-        ]);
-
-        walls.setAllStates([
-            {
-                name: "default",
-                styles: {
-                    "guide": "guide"
-                }
-            }
-        ]);
-
-        box.slabs.push(walls);
-
-        this.svgar = box;
     },
     mounted() {
         this.s = (<Element>this.$refs.svgar).clientWidth;
+    },
+    watch: {
+        cache: function (val) {
+            console.log("update");
+            this.svgar.listen();
+        }
     },
     methods: {
         startListen(): void {
             this.svgar.listen();
         },
         onEdgeHover(event: MouseEvent): void {
+            if(this.lockDot) {
+                return;
+            }
             this.showDot = true;
 
             this.dotX = event.pageX - 5;
@@ -139,19 +89,159 @@ export default Vue.extend({
             console.log("Enter!");
         },
         onEdgeMove(event: MouseEvent): void {
+            if(this.lockDot) {
+                return;
+            }
             this.dotX = event.pageX - 5;
             this.dotY = event.pageY - 5;
         },
         onEdgeLeave(): void {
-            this.showDot = false;
+            this.showDot = this.lockDot;
             console.log("Leave!");
+        },
+        onCommitDot(event: MouseEvent): void {
+            let x = (this.dotX - (document.querySelector("svg")).getBoundingClientRect().left) / 400;
+            let y = (this.dotY - (document.querySelector("svg")).getBoundingClientRect().top) / 400;
+
+            this.lineStartX = (x * 2) - 1 + 0.05;
+            this.lineEndX = this.lineStartX;
+            this.lineStartY = -0.9;
+
+            this.lockDot = true;
+        },
+        onMoveLine(event: MouseEvent): void {
+            if (Date.now() - this.lastMove < 50) {
+                return;
+            }
+
+            console.log("move");
+
+            let x = (event.pageX - (document.querySelector("svg")).getBoundingClientRect().left) / 400;
+            let y = (event.pageY - (document.querySelector("svg")).getBoundingClientRect().top) / 400;
+
+            //this.lineEndX = (x * 2) - 1;
+            this.lineEndY = ((y * 2) - 1) * -1;
+
+            this.lastMove = Date.now();
+        },
+        onAttemptMakeDesks(): void {
+            if (this.lockDot) {
+                this.lockDot = false;
+                this.showDot = false;
+            }
         }
     },
     computed: {
         svg(): string {
-            this.$nextTick(this.svgar.listen());
+            let box = new Svgar.Cube();
+            box.frame([0, 0], 2.1, 2.1);
 
-            return this.svgar.compile(400, 400);
+            let walls = new Svgar.Slab("wall");
+            const o = 0.1;
+
+            walls.addPath(new Svgar.Builder.Polyline(1, 1)
+                .lineTo(1, -1)
+                .lineTo(-1, -1)
+                .lineTo(-1, 1)
+                .lineTo(-0.2, 1)
+                .lineTo(-0.2, 1 - o)
+                .lineTo(-1 + o, 1 - o)
+                .lineTo(-1 + o, -1 + o)
+                .lineTo(1 - o, -1 + o)
+                .lineTo(1 - o, 1 - o)
+                .lineTo(0.2, 1 - o)
+                .lineTo(0.2, 1)
+                .lineTo(1, 1)
+                .close()
+                .build());
+
+            let background = new Svgar.Builder.Polyline(1, 1).lineTo(1, -1).lineTo(-1, -1).lineTo(-1, 1).close().build();
+            background.setTag("bg");
+            background.setElevation(-2);
+            walls.addPath(background);
+            
+            let guide = new Svgar.Builder.Polyline(-1 + o, -1 + o).lineTo(1 - o, -1 + o).build();
+            guide.setTag("guide");
+            guide.setElevation(2);
+            guide.attach("mouseenter", this.onEdgeHover);
+            guide.attach("mouseleave", this.onEdgeLeave);
+            guide.attach("mousemove", this.onEdgeMove);
+            guide.attach("mousedown", this.onCommitDot);
+            walls.addPath(guide);
+
+            walls.setAllStyles([
+                {
+                name: "default",
+                attributes: {
+                    "stroke": "black",
+                    "stroke-width": "1.5px",
+                    "fill": "gainsboro",
+                    }
+                },
+                {
+                    name: "guide",
+                    attributes: {
+                        "stroke": "black",
+                        "stroke-width": "1.5px",
+                    }
+                },
+                {
+                    name: "guide:hover",
+                    attributes: {
+                        "stroke": "black",
+                        "stroke-width": "4px",
+                        "cursor": "pointer"
+                    }
+                },
+                {
+                    name: "whitefill",
+                    attributes: {
+                        "stroke": "none",
+                        "fill": "white",
+                    }
+                }
+            ]);
+
+            walls.setAllStates([
+                {
+                    name: "default",
+                    styles: {
+                        "guide": "guide",
+                        "bg": "whitefill"
+                    }
+                }
+            ]);
+
+            box.slabs.push(walls);
+
+            let guideline = new Svgar.Slab("line");
+
+            if (this.lockDot) {
+
+                let path = new Svgar.Builder.Polyline(this.lineStartX, this.lineStartY).lineTo(this.lineEndX, this.lineEndY).build();
+
+                guideline.addPath(path);
+
+                guideline.setAllStyles([
+                    {
+                        name: "default",
+                        attributes: {
+                            "stroke": "black",
+                            "stroke-width": "1px",
+                            "pointer-events": "none",
+                            "stroke-dasharray": "2 2",
+                        }
+                    }
+                ]);
+
+                this.svgarGuide = guideline;
+                box.slabs.push(this.svgarGuide);
+            }
+
+            this.svgar = box;
+            this.cache = this.svgar.compile(400, 400);
+
+            return this.cache;
         }
     }
 })
