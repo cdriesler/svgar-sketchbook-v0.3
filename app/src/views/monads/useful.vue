@@ -4,8 +4,6 @@
         </div>
         <div class="box" ref="svgar" v-html="svg" @mousemove="onMoveLine" @click="onAttemptMakeDesks">
         </div>
-        <br>
-        <button @click="startListen"> LISTEN </button>
     </div>
 </template>
 
@@ -60,6 +58,7 @@ export default Vue.extend({
             showDot: false,
             lockDot: false,
             lastMove: 0,
+            deskLines: [] as number[][]
         }
     },
     created() {
@@ -103,7 +102,7 @@ export default Vue.extend({
             let x = (this.dotX - (document.querySelector("svg")).getBoundingClientRect().left) / 400;
             let y = (this.dotY - (document.querySelector("svg")).getBoundingClientRect().top) / 400;
 
-            this.lineStartX = (x * 2) - 1 + 0.05;
+            this.lineStartX = (x * 2) - 1 + 0.02;
             this.lineEndX = this.lineStartX;
             this.lineStartY = -0.9;
 
@@ -128,13 +127,15 @@ export default Vue.extend({
             if (this.lockDot) {
                 this.lockDot = false;
                 this.showDot = false;
+
+                this.deskLines.push([this.lineStartX, this.lineStartY, this.lineEndX, this.lineEndY]);
             }
         }
     },
     computed: {
         svg(): string {
             let box = new Svgar.Cube();
-            box.frame([0, 0], 2.1, 2.1);
+            box.frame([0, 0], 2.01, 2.01);
 
             let walls = new Svgar.Slab("wall");
             const o = 0.1;
@@ -237,6 +238,48 @@ export default Vue.extend({
                 this.svgarGuide = guideline;
                 box.slabs.push(this.svgarGuide);
             }
+
+            let cslab = new Svgar.Slab("c");
+
+            this.deskLines.forEach((x:number[]) => {
+                let c = new Svgar.Builder.Circle(x[2] + 0.09, x[3], 0.06).build();
+                cslab.addPath(c);
+
+                const w = 0.07;
+                const h = 0.12;
+
+                let d = new Svgar.Builder.Polyline(x[2] - w, x[3] + h)
+                .lineTo(x[2] + w, x[3] + h)
+                .lineTo(x[2] + w, x[3] - h)
+                .lineTo(x[2] - w, x[3] - h)
+                .close()
+                .build();
+                d.setElevation(2);
+                d.setTag('desk')
+                cslab.addPath(d);
+            });
+
+            cslab.setAllStyles([
+                {
+                name: "desk",
+                attributes: {
+                    "stroke": "black",
+                    "stroke-width": "1px",
+                    "fill": "white",
+                    }
+                }
+            ]);
+
+            cslab.setAllStates([
+                {
+                    name: "default",
+                    styles: {
+                        "desk": "desk"
+                    }
+                }
+            ]);
+
+            box.slabs.push(cslab);
 
             this.svgar = box;
             this.cache = this.svgar.compile(400, 400);
