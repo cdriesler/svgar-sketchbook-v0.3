@@ -28,14 +28,14 @@
 <script lang="ts">
 import Vue from 'vue'
 import bubble from './monads/bubble.vue';
-import covert from './monads/covert.vue';
+import parade from './monads/parade.vue';
 import useful from './monads/useful.vue';
 
 export default Vue.extend({
     name: 'monad-container',
     components: {
         bubble,
-        covert,
+        parade,
         useful
     },
     computed: {

@@ -27,6 +27,7 @@
 
 .slider {
     margin-top: 15px;
+    box-sizing: border-box;
     -webkit-appearance: none;  /* Override default CSS styles */
     appearance: none;
     width: 400px; /* Full-width */

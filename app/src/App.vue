@@ -4,21 +4,12 @@
       <router-view/>
     </div>
     <div class="controls">
-      <div class="controls__flank">
-        <i class="material-icons-sharp">account_box</i> <!-- cloud_off -->
-      </div>
-      <div class="controls__flank">
-        <i class="material-icons-sharp">assessment</i>
-      </div>
-      <div class="controls__flank" @click="onGoHome">
-        <i class="material-icons md-24">apps</i>
-      </div>
-      <div class="controls__flank">
-        <i class="material-icons-sharp">casino</i>
-      </div>
-      <div class="controls__flank" @click="onGoToDemo">
-        <i class="material-icons-sharp">crop_din</i>
-      </div>
+      <router-link class="controls__button" to="/">
+      1P
+      </router-link>
+      <router-link class="controls__button" to="/demo">
+      2P
+      </router-link>
     </div>    
   </div>
 </template>
@@ -30,7 +21,7 @@
 }
 
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: 'Consolas', monospace;
   text-align: center;
   color: black;
 
@@ -63,9 +54,24 @@
 
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: space-around;
   align-content: center;
   align-items: center;
+}
+
+.controls__button {
+  height: 50px;
+  width: 100px;
+
+  box-sizing: border-box;
+  border: 2px solid black;
+  border-radius: 15px;
+
+  color: black;
+  text-align: center;
+  text-decoration: none;
+  line-height: 46px;
+  vertical-align: middle;
 }
 
 .controls__flank {

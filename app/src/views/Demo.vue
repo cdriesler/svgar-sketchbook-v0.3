@@ -29,6 +29,9 @@
     justify-content: space-evenly;
     align-items: center;
     align-content: center;
+
+    border-radius: 15px;
+    border: 2px solid black;
 }
 
 .box {
@@ -187,7 +190,7 @@ export default Vue.extend({
             this.$socket.client.emit('coordinate', {coordinates: coord});
         },
         onMove(event: TouchEvent): void {
-            if(Date.now() - this.prev < 50) {
+            if(Date.now() - this.previous < 50) {
                 return;
             }
 

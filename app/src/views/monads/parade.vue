@@ -53,7 +53,7 @@ interface Rectangle {
 }
 
 export default Vue.extend({
-    name: 'covert',
+    name: 'parade',
     data() {
         return {
             offset: 0,

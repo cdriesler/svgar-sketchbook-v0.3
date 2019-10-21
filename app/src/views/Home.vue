@@ -4,7 +4,8 @@
 	<monad-box 
 	v-for='(monad, index) in manifest' 
 	:key="`${index}_${monad.name}`"
-	:name="monad.name">
+	:name="monad.name"
+	:description="monad.description">
 	</monad-box>
 </div>
 </div>
@@ -16,12 +17,21 @@
   width: 100%;
   height: 100%;
 }
+
 .home {
 	height: 100%;
-  overflow-y: auto;
+	width: 100%;
+  	overflow-y: auto;
+	overflow-x: hidden;
 
 	box-shadow: inset 0 0 5px gainsboro;
+	border: 2px solid black;
 	border-radius: 15px;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	align-items: left;
 }
 
 </style>

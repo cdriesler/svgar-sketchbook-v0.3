@@ -282,7 +282,7 @@ export default Vue.extend({
             box.slabs.push(cslab);
 
             this.svgar = box;
-            this.cache = this.svgar.compile(400, 400);
+            this.cache = this.svgar.compile(this.s, this.s);
 
             return this.cache;
         }
