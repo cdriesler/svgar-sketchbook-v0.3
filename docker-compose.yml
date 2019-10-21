@@ -1,0 +1,13 @@
+version: '3'
+services:
+  api:
+    build: api
+    ports:
+    - "9020:3000"
+  app:
+    build: app
+    ports:
+    - "9010:8080"
+volumes:
+  api:
+  app:

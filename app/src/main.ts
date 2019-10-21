@@ -6,7 +6,7 @@ import './registerServiceWorker';
 import VueSocketIOExt from 'vue-socket.io-extended';
 import io from 'socket.io-client';
 
-const socket = io('https://svgar-api.appspot.com');
+const socket = io('http://localhost:9020');
 
 Vue.use(VueSocketIOExt, socket, { store });
 

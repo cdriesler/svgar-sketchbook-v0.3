@@ -33,6 +33,6 @@ io.on("connection", (socket: any) => {
 });
 
 // start our simple server up on localhost:3000
-const server = http.listen(8080, function() {
+const server = http.listen(3000, function() {
     console.log("listening on *:3000");
 });

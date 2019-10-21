@@ -85,7 +85,7 @@ export default Vue.extend({
     },
     computed: {
         svg(): string {
-            let dwg = new Svgar.Cube();
+            let dwg = new Svgar.Cube("covert");
 
             let background = new Svgar.Builder.Polyline(0, 0).lineTo(1, 0).lineTo(1, 1).lineTo(0, 1).close().build();
             background.setElevation(-1);

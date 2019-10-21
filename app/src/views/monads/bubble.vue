@@ -79,7 +79,7 @@ export default Vue.extend({
     computed: {
         svg(): string {
 
-            let dwg = new Svgar.Cube();
+            let dwg = new Svgar.Cube("bubble");
 
             let fills = new Svgar.Slab("fills");
             let outlines = new Svgar.Slab("outlines");

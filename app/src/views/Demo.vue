@@ -72,6 +72,7 @@ export default Vue.extend({
             boxX: 1,
             boxY: 0,
             size: 0,
+            previous: 0,
         }
     },
     created() {
@@ -92,7 +93,7 @@ export default Vue.extend({
     },
     computed: {
         svg(): string {
-            let dots = new Svgar.Cube()
+            let dots = new Svgar.Cube("main")
 
             let dot = new Svgar.Slab('dot');
 
@@ -183,13 +184,15 @@ export default Vue.extend({
         },
         onDown(event: TouchEvent): void {
             let coord = this.normalizeEventLocation(event);
-            //console.log(coord);
             this.$socket.client.emit('coordinate', {coordinates: coord});
         },
         onMove(event: TouchEvent): void {
+            if(Date.now() - this.prev < 50) {
+                return;
+            }
+
             let coord = this.normalizeEventLocation(event);
-            //navigator.vibrate(50);
-            //console.log(coord);
+
             this.$socket.client.emit('coordinate', {coordinates: coord});
         },
         onUp(): void {

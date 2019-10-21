@@ -39,7 +39,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
-import Svgar from 'svgar';
+import Svgar, { Create, Locate, Update } from 'svgar';
 
 export default Vue.extend({
     name: 'useful',
@@ -62,7 +62,7 @@ export default Vue.extend({
         }
     },
     created() {
-
+        
     },
     mounted() {
         this.s = (<Element>this.$refs.svgar).clientWidth;
@@ -134,7 +134,7 @@ export default Vue.extend({
     },
     computed: {
         svg(): string {
-            let box = new Svgar.Cube();
+            let box = new Svgar.Cube("covert");
             box.frame([0, 0], 2.01, 2.01);
 
             let walls = new Svgar.Slab("wall");
