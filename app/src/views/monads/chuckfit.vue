@@ -45,7 +45,7 @@ interface Point {
 
 interface Line {
     y: number | undefined,
-    m: number | undefined,
+    m: number | undefined ,
     x: number | undefined,
     b: number | undefined,
 }
@@ -188,6 +188,7 @@ export default Vue.extend({
             let ext = Locate().svgar.slab.withName("extents").in.svgar.cube(this.svgar);
 
             Update().svgar.slab(ext!).geometry.to(this.makeExtents());
+            this.makeOffset();
 
             return this.svgar.compile(this.s, this.s);
         }
@@ -210,15 +211,27 @@ export default Vue.extend({
 
             // Determine slope
             line.m = ax < bx 
-                ? by - ay / bx - ax
-                : ay - by / ax - bx;
+                ? (bx - ax) == 0 ? Infinity : by - ay / bx - ax
+                : (ax - bx) == 0 ? Infinity : ay - by / ax - bx;
 
             // Determine y intercept
-            if (line.x && line.y && line.m) {
-                line.b = ay - (line.m * ax);
+            line.b = line.m == Infinity
+             ? 0
+             : ay - (line.m * ax);
+
+            if (line.m == Infinity) {
+                line.x = ax;
             }
 
             return line;
+        },
+        resolveLinePoint(line: Line): void {
+            if (line.y == undefined) {
+                line.y = (line.m * line.x) + line.b;
+            }
+            else if (line.x == undefined) {
+                line.x = (line.y - line.b) / line.m;
+            }
         },
         getLineIntersection(a: Line, b: Line): Point {
             let pt: Point = {
@@ -226,7 +239,22 @@ export default Vue.extend({
                 y: 0,
             }
 
-            
+            if (a.m != Infinity && b.m != Infinity) {
+                pt.x = (b.b - a.b) / (a.m - b.m);
+                pt.y = (a.m & pt.x) + a.b;
+            }
+            else if (a.m == Infinity) {
+                pt.x = a.x;
+                b.x = a.x;
+                this.resolveLinePoint(b);
+                pt.y = b.y;
+            }
+            else if (b.m == Infinity) {
+                pt.x = b.x;
+                a.x = b.x;
+                this.resolveLinePoint(a);
+                pt.y = a.y;
+            }
 
             return pt;
         },
@@ -236,7 +264,8 @@ export default Vue.extend({
             let bottom = this.createLine(bc.a.x, bc.a.y, bc.d.x, bc.d.y);
             let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
 
-            
+            console.log(this.getLineIntersection(right, bottom));
+
             return [];
         },
         makeExtents(): SvgarPath[] {
