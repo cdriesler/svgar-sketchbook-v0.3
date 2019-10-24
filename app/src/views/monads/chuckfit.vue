@@ -209,10 +209,12 @@ export default Vue.extend({
                 b: undefined,
             }
 
+            //console.log(`${ax},${bx} => ${bx},${by}`);
+
             // Determine slope
             line.m = ax < bx 
-                ? (bx - ax) == 0 ? Infinity : by - ay / bx - ax
-                : (ax - bx) == 0 ? Infinity : ay - by / ax - bx;
+                ? (bx - ax) == 0 ? Infinity : ( by - ay ) / ( bx - ax )
+                : (ax - bx) == 0 ? Infinity : ( ay - by ) / ( ax - bx );
 
             // Determine y intercept
             line.b = line.m == Infinity
@@ -222,6 +224,8 @@ export default Vue.extend({
             if (line.m == Infinity) {
                 line.x = ax;
             }
+
+            //console.log(line);
 
             return line;
         },
@@ -233,7 +237,11 @@ export default Vue.extend({
                 line.x = (line.y - line.b) / line.m;
             }
         },
-        getLineIntersection(a: Line, b: Line): Point {
+        getLineIntersection(a: Line, b: Line): Point | undefined {
+            if (a.m == b.m) {
+                return undefined;
+            }
+
             let pt: Point = {
                 x: 0,
                 y: 0,
@@ -241,7 +249,7 @@ export default Vue.extend({
 
             if (a.m != Infinity && b.m != Infinity) {
                 pt.x = (b.b - a.b) / (a.m - b.m);
-                pt.y = (a.m & pt.x) + a.b;
+                pt.y = (a.m * pt.x) + a.b;
             }
             else if (a.m == Infinity) {
                 pt.x = a.x;
@@ -260,11 +268,12 @@ export default Vue.extend({
         },
         makeOffset(): SvgarPath[] {
             const bc = this.info.borderControls;
+            let top = this.createLine(bc.b.x, bc.b.y, bc.c.x, bc.c.y);
             let left = this.createLine(bc.a.x, bc.a.y, bc.b.x, bc.b.y);
             let bottom = this.createLine(bc.a.x, bc.a.y, bc.d.x, bc.d.y);
             let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
 
-            console.log(this.getLineIntersection(right, bottom));
+            console.log(this.getLineIntersection(top, left));
 
             return [];
         },
