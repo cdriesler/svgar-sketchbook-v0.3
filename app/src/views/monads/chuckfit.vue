@@ -43,6 +43,13 @@ interface Point {
     y: number
 }
 
+interface Line {
+    y: number | undefined,
+    m: number | undefined,
+    x: number | undefined,
+    b: number | undefined,
+}
+
 interface ChuckFitDrawing {
     borderControls: {
         a: Point,
@@ -78,8 +85,6 @@ export default Vue.extend({
     watch: {
         svg(): void {
             this.$nextTick(() => this.svgar.listen());
-            //this.$nextTick(() => this.svgar.listen);
-            console.log("Changed!");
         }
     },
     created() {
@@ -195,6 +200,45 @@ export default Vue.extend({
             const y = 106 - ((((event.pageY - main.getBoundingClientRect().top) / this.s) * 106) + 3);
             return [x, y];
         },
+        createLine(ax: number, ay: number, bx: number, by: number): Line {
+            let line:Line = {
+                y: undefined,
+                m: undefined,
+                x: undefined,
+                b: undefined,
+            }
+
+            // Determine slope
+            line.m = ax < bx 
+                ? by - ay / bx - ax
+                : ay - by / ax - bx;
+
+            // Determine y intercept
+            if (line.x && line.y && line.m) {
+                line.b = ay - (line.m * ax);
+            }
+
+            return line;
+        },
+        getLineIntersection(a: Line, b: Line): Point {
+            let pt: Point = {
+                x: 0,
+                y: 0,
+            }
+
+            
+
+            return pt;
+        },
+        makeOffset(): SvgarPath[] {
+            const bc = this.info.borderControls;
+            let left = this.createLine(bc.a.x, bc.a.y, bc.b.x, bc.b.y);
+            let bottom = this.createLine(bc.a.x, bc.a.y, bc.d.x, bc.d.y);
+            let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
+
+            
+            return [];
+        },
         makeExtents(): SvgarPath[] {
             let r = (<ChuckFitDrawing>this.info).borderControls;
 
@@ -277,7 +321,7 @@ export default Vue.extend({
             this.moveStartX = pos[0];
             this.moveStartY = pos[1];
 
-            console.log(this.pageSpaceToSvgarSpace(event));
+            //console.log(this.pageSpaceToSvgarSpace(event));
             //console.log(Locate().svgar.path.withId(id).in.svgar.cube(this.svgar));
         },
         moveExtents(event: MouseEvent): void {
