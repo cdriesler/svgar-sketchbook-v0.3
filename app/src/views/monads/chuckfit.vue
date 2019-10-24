@@ -1,6 +1,12 @@
 <template>
     <div id="chuckfit">
-        <div class="main" ref="svgar" v-html="svg">
+        <div 
+        class="main" 
+        ref="svgar" 
+        v-html="svg"
+        @mousemove="trackMouse"
+        @mouseleave="stopTrackMouse"
+        @mouseUp="stopTrackMouse">
 
         </div>
     </div>
@@ -54,8 +60,19 @@ export default Vue.extend({
     data() {
         return {
             s: 0,
+            prev: 0,
             info: {} as ChuckFitDrawing,
             svgar: {} as SvgarCube,
+            movingExtents: false,
+            movingCorner: "",
+            moveStartX: 0,
+            moveStartY: 0,
+            cornerStartX: 0,
+            cornerStartY: 0,
+            dX: 0,
+            dY: 0,
+            cursorX: -1,
+            cursorY: -1,
         }
     },
     watch: {
@@ -99,6 +116,7 @@ export default Vue.extend({
                 attributes: {
                     "stroke": "gainsboro",
                     "stroke-width": "2px",
+                    "stroke-dasharray": "4px",
                     "fill": "none"
                 }
             },
@@ -170,6 +188,13 @@ export default Vue.extend({
         }
     },
     methods: {
+        pageSpaceToSvgarSpace(event: MouseEvent): number[] {
+            const main: Element = this.$refs.svgar;
+
+            const x = (((event.pageX - main.getBoundingClientRect().left) / this.s) * 106) - 3;
+            const y = 106 - ((((event.pageY - main.getBoundingClientRect().top) / this.s) * 106) + 3);
+            return [x, y];
+        },
         makeExtents(): SvgarPath[] {
             let r = (<ChuckFitDrawing>this.info).borderControls;
 
@@ -208,7 +233,10 @@ export default Vue.extend({
                 c.setTag("handles");
                 c.setElevation(5);
                 c.attach("mouseleave", this.deactivateExtents);
+                //c.attach("mouseleave", this.endMoveExtents);
                 c.attach("mousedown", this.beginMoveExtents);
+                //c.attach("mousemove", this.moveExtents);
+                c.attach("mouseup", this.endMoveExtents);
 
                 ids.push(c.getId());
                 controls.push(c);
@@ -226,17 +254,67 @@ export default Vue.extend({
             return Locate().svgar.slab.withName("extents").in.svgar.cube(this.svgar!);
         },
         activateExtents(): void {
-            console.log("active");
             Update().svgar.slab(this.getExtents()).state.to("active");
         },
         deactivateExtents(): void {
-            console.log("default");
+            if(this.movingExtents) {
+                return;
+            }
+
             Update().svgar.slab(this.getExtents()).state.to("default");
         },
         beginMoveExtents(event: MouseEvent): void {
+            this.movingExtents = true;
+
             const id = (<Element>event.srcElement).id;
-            console.log(this.info.borderMappings[id]);
+
+            const corner = this.info.borderMappings[id];
+            this.movingCorner = corner;
+            this.cornerStartX = this.info.borderControls[corner].x;
+            this.cornerStartY = this.info.borderControls[corner].y;
+
+            const pos = this.pageSpaceToSvgarSpace(event);
+            this.moveStartX = pos[0];
+            this.moveStartY = pos[1];
+
+            console.log(this.pageSpaceToSvgarSpace(event));
             //console.log(Locate().svgar.path.withId(id).in.svgar.cube(this.svgar));
+        },
+        moveExtents(event: MouseEvent): void {
+            if (!this.movingExtents) {
+                return;
+            }
+
+            const pos = this.pageSpaceToSvgarSpace(event);
+
+            this.dX = pos[0] - this.moveStartX;
+            this.dY = pos[1] - this.moveStartY;
+
+            this.info.borderControls[this.movingCorner].x = this.cornerStartX + this.dX;
+            this.info.borderControls[this.movingCorner].y = this.cornerStartY + this.dY;
+        },
+        endMoveExtents(): void {
+            this.movingExtents = false;
+            this.moveStartX = 0;
+            this.moveStartY = 0;
+            this.cornerStartX = 0;
+            this.cornerStartY = 0;
+            this.dX = 0;
+            this.dY = 0;
+        },
+        trackMouse(event: MouseEvent): void {
+            if(Date.now() - this.prev < 20) {
+                return;
+            }
+
+            this.moveExtents(event);
+
+            this.prev = Date.now();
+        },
+        stopTrackMouse(): void {
+            this.cursorX = 0;
+            this.cursorY = 0;
+            this.endMoveExtents();
         }
     }
 
