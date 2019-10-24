@@ -31,6 +31,7 @@ import bubble from './monads/bubble.vue';
 import parade from './monads/parade.vue';
 import useful from './monads/useful.vue';
 import sultry from './monads/sultry.vue';
+import chuckfit from './monads/chuckfit.vue';
 
 export default Vue.extend({
     name: 'monad-container',
@@ -38,7 +39,8 @@ export default Vue.extend({
         bubble,
         parade,
         useful,
-        sultry
+        sultry,
+        chuckfit,
     },
     computed: {
         currentMonad(): string {

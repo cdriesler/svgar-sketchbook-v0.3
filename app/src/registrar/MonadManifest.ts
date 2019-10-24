@@ -18,7 +18,11 @@ const MonadManifest: MonadRecord[] = [
     },
     {
         name: "sultry",
-        description: "spicy hot heatmap"
+        description: "spicy hot heatmap",
+    },
+    {
+        name: "chuckfit",
+        description: "budget testfit",
     }
 ]
 
