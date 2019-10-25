@@ -50,6 +50,8 @@ interface Line {
     b: number | undefined,
 }
 
+type Direction = "up" | "down" | "left" | "right";
+
 interface ChuckFitDrawing {
     borderControls: {
         a: Point,
@@ -187,8 +189,9 @@ export default Vue.extend({
 
             let ext = Locate().svgar.slab.withName("extents").in.svgar.cube(this.svgar);
 
-            Update().svgar.slab(ext!).geometry.to(this.makeExtents());
-            this.makeOffset();
+            Update().svgar.slab(ext!).geometry.to([
+                ...this.makeExtents(),
+                ...this.makeSetback()]);
 
             return this.svgar.compile(this.s, this.s);
         }
@@ -200,6 +203,11 @@ export default Vue.extend({
             const x = (((event.pageX - main.getBoundingClientRect().left) / this.s) * 106) - 3;
             const y = 106 - ((((event.pageY - main.getBoundingClientRect().top) / this.s) * 106) + 3);
             return [x, y];
+        },
+        normalizePoint(point: Point): void {
+            const n = Math.sqrt((point.x * point.x) + (point.y * point.y));
+            point.x /= n;
+            point.y /= n;
         },
         createLine(ax: number, ay: number, bx: number, by: number): Line {
             let line:Line = {
@@ -228,6 +236,44 @@ export default Vue.extend({
             //console.log(line);
 
             return line;
+        },
+        createDirectionalOffset(line: Line, d: number, direction: Direction): void {
+            
+        },
+        createLineOffset(line: Line, d: number): Line {
+            if (line.m == Infinity) {
+                return {
+                    y: undefined,
+                    m: Infinity,
+                    x: line.x + d,
+                    b: undefined,
+                }
+            }
+
+            let refPt = this.getLineIntersection(line, { y: undefined, m: Infinity, x: 50, b: undefined });
+            if (refPt == undefined) {
+                refPt = this.getLineIntersection(line, { y: undefined, m: 0, x: undefined, b: 50});
+            }
+            const slopePt: Point = {
+                x: line.m == Infinity ? 0 : 1,
+                y: line.m == Infinity ? 1 : line.m,
+            }
+            const perpPt: Point = {
+                x: -slopePt.y,
+                y: slopePt.x,
+            }
+            this.normalizePoint(perpPt);
+            const offsetPt: Point = {
+                x: refPt.x + (perpPt.x * d),
+                y: refPt.y + (perpPt.y * d)
+            }
+
+            return {
+                y: undefined,
+                m: line.m,
+                x: undefined,
+                b: offsetPt.y - (line.m * offsetPt.x),
+            }
         },
         resolveLinePoint(line: Line): void {
             if (line.y == undefined) {
@@ -266,16 +312,25 @@ export default Vue.extend({
 
             return pt;
         },
-        makeOffset(): SvgarPath[] {
+        makeSetback(): SvgarPath[] {
             const bc = this.info.borderControls;
             let top = this.createLine(bc.b.x, bc.b.y, bc.c.x, bc.c.y);
             let left = this.createLine(bc.a.x, bc.a.y, bc.b.x, bc.b.y);
             let bottom = this.createLine(bc.a.x, bc.a.y, bc.d.x, bc.d.y);
             let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
 
-            console.log(this.getLineIntersection(top, left));
+            const o = 5;
+            let topOffset = this.createLineOffset(top, -5);
+            let bottomOffset = this.createLineOffset(bottom, 5);
+            let leftOffset = this.createLineOffset(left, 5);
+            let rightOffset = this.createLineOffset(right, -5);
 
-            return [];
+            const a: Point = this.getLineIntersection(leftOffset, bottomOffset);
+            const b: Point = this.getLineIntersection(leftOffset, topOffset);
+
+            console.log(a);
+
+            return [Create().svgar.path.withTag("extents").from.polyline(new Svgar.Builder.Polyline(a.x, a.y).lineTo(b.x, b.y))];
         },
         makeExtents(): SvgarPath[] {
             let r = (<ChuckFitDrawing>this.info).borderControls;
