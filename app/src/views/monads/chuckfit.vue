@@ -107,13 +107,15 @@ export default Vue.extend({
                 styles: {
                     "border": "nofill",
                     "handles": "hidden",
+                    "setback": "thindash",
                 }
             },
             {
                 name: "active",
                 styles: {
                     "border": "nofillblack",
-                    "handles": "whitefill"
+                    "handles": "whitefill",
+                    "setback": "thindash",
                 }
             }
         ])
@@ -123,7 +125,6 @@ export default Vue.extend({
                 attributes: {
                     "stroke": "gainsboro",
                     "stroke-width": "2px",
-                    "stroke-dasharray": "4px",
                     "fill": "none"
                 }
             },
@@ -166,6 +167,15 @@ export default Vue.extend({
                 name: "hidden",
                 attributes: {
                     "display": "none",
+                }
+            },
+            {
+                name: "thindash",
+                attributes: {
+                    "stroke": "black",
+                    "stroke-width": "1px",
+                    "stroke-dasharray": "4px 2px",
+                    "fill": "none",
                 }
             }
         ])
@@ -237,8 +247,19 @@ export default Vue.extend({
 
             return line;
         },
-        createDirectionalOffset(line: Line, d: number, direction: Direction): void {
-            
+        createDirectionalOffset(line: Line, d: number, direction: Direction): Line {
+            let offsets: Line[] = [this.createLineOffset(line, d), this.createLineOffset(line, -d)].sort((a, b) => a.b - b.b);
+
+            switch(direction) {
+                case 'up':
+                    return offsets[1];
+                case 'down':
+                    return offsets[0];
+                case 'left':
+                    return line.m > 0 ? offsets[1] : offsets[0];
+                case 'right':
+                    return line.m > 0 ? offsets[0] : offsets[1];
+            }
         },
         createLineOffset(line: Line, d: number): Line {
             if (line.m == Infinity) {
@@ -320,17 +341,22 @@ export default Vue.extend({
             let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
 
             const o = 5;
-            let topOffset = this.createLineOffset(top, -5);
-            let bottomOffset = this.createLineOffset(bottom, 5);
-            let leftOffset = this.createLineOffset(left, 5);
-            let rightOffset = this.createLineOffset(right, -5);
+            let topOffset = this.createDirectionalOffset(top, o, 'down');
+            let bottomOffset = this.createDirectionalOffset(bottom, o, 'up');
+            let leftOffset = this.createDirectionalOffset(left, o, 'right');
+            let rightOffset = this.createDirectionalOffset(right, o, 'left');
 
             const a: Point = this.getLineIntersection(leftOffset, bottomOffset);
             const b: Point = this.getLineIntersection(leftOffset, topOffset);
+            const c: Point = this.getLineIntersection(topOffset, rightOffset);
+            const d: Point = this.getLineIntersection(rightOffset, bottomOffset);
 
-            console.log(a);
-
-            return [Create().svgar.path.withTag("extents").from.polyline(new Svgar.Builder.Polyline(a.x, a.y).lineTo(b.x, b.y))];
+            return [Create().svgar.path.withTag("setback").from.polyline(
+                new Svgar.Builder.Polyline(a.x, a.y)
+                .lineTo(b.x, b.y)
+                .lineTo(c.x, c.y)
+                .lineTo(d.x, d.y)
+                .close())];
         },
         makeExtents(): SvgarPath[] {
             let r = (<ChuckFitDrawing>this.info).borderControls;
@@ -365,7 +391,7 @@ export default Vue.extend({
 
             for(let i = 0; i < circles.length; i+=2) {
                 let c = Create().svgar.path.from.circle(
-                    new Svgar.Builder.Circle(circles[i], circles[i + 1], 2)
+                    new Svgar.Builder.Circle(circles[i], circles[i + 1], 1.5)
                 );
                 c.setTag("handles");
                 c.setElevation(5);
