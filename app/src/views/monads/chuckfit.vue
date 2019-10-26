@@ -82,6 +82,7 @@ export default Vue.extend({
             dY: 0,
             cursorX: -1,
             cursorY: -1,
+            offset: 5
         }
     },
     watch: {
@@ -108,6 +109,7 @@ export default Vue.extend({
                     "border": "nofill",
                     "handles": "hidden",
                     "setback": "thindash",
+                    "profile": "main",
                 }
             },
             {
@@ -116,6 +118,7 @@ export default Vue.extend({
                     "border": "nofillblack",
                     "handles": "whitefill",
                     "setback": "thindash",
+                    "profile": "main"
                 }
             }
         ])
@@ -177,6 +180,21 @@ export default Vue.extend({
                     "stroke-dasharray": "4px 2px",
                     "fill": "none",
                 }
+            },
+            {
+                name: "main",
+                attributes: {
+                    "stroke": "black",
+                    "stroke-width": "2px",
+                    "fill": "white",
+                }
+            },
+            {
+                name: "main:hover",
+                attributes: {
+                    "cursor": "pointer",
+                    "fill": "gainsboro"
+                }
             }
         ])
         .then
@@ -201,7 +219,8 @@ export default Vue.extend({
 
             Update().svgar.slab(ext!).geometry.to([
                 ...this.makeExtents(),
-                ...this.makeSetback()]);
+                ...this.makeSetback(),
+                ...this.makeProfile()]);
 
             return this.svgar.compile(this.s, this.s);
         }
@@ -333,6 +352,47 @@ export default Vue.extend({
 
             return pt;
         },
+        makeProfile(): SvgarPath[] {
+            const bc = this.info.borderControls;
+            let top = this.createLine(bc.b.x, bc.b.y, bc.c.x, bc.c.y);
+            let left = this.createLine(bc.a.x, bc.a.y, bc.b.x, bc.b.y);
+            let bottom = this.createLine(bc.a.x, bc.a.y, bc.d.x, bc.d.y);
+            let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
+
+            const oo = this.offset + 3;
+            const oi = this.offset + 20;
+
+            let outerTop = this.createDirectionalOffset(top, oo, 'down');
+            let outerBottom = this.createDirectionalOffset(bottom, oo, 'up');
+            let outerLeft = this.createDirectionalOffset(left, oo, 'right');
+            let outerRight = this.createDirectionalOffset(right, oo, 'left');
+
+            let innerTop = this.createDirectionalOffset(top, oi, 'down');
+            let innerBottom = this.createDirectionalOffset(bottom, oi, 'up');
+            let innerLeft = this.createDirectionalOffset(left, oi, 'right');
+            let innerRight = this.createDirectionalOffset(right, oi, 'left');
+
+            const a: Point = this.getLineIntersection(outerLeft, outerTop);
+            const b: Point = this.getLineIntersection(outerTop, outerRight);
+            const c: Point = this.getLineIntersection(outerRight, outerBottom);
+            const d: Point = this.getLineIntersection(outerBottom, innerRight);
+            const e: Point = this.getLineIntersection(innerRight, innerTop);
+            const f: Point = this.getLineIntersection(innerTop, innerLeft);
+            const g: Point = this.getLineIntersection(innerLeft, outerBottom);
+            const h: Point = this.getLineIntersection(outerBottom, outerLeft);
+
+            return [Create().svgar.path.withTag("profile").from.polyline(
+                new Svgar.Builder.Polyline(a.x, a.y)
+                .lineTo(b.x, b.y)
+                .lineTo(c.x, c.y)
+                .lineTo(d.x, d.y)
+                .lineTo(e.x, e.y)
+                .lineTo(f.x, f.y)
+                .lineTo(g.x, g.y)
+                .lineTo(h.x, h.y)
+                .close()
+            )];
+        },
         makeSetback(): SvgarPath[] {
             const bc = this.info.borderControls;
             let top = this.createLine(bc.b.x, bc.b.y, bc.c.x, bc.c.y);
@@ -340,7 +400,7 @@ export default Vue.extend({
             let bottom = this.createLine(bc.a.x, bc.a.y, bc.d.x, bc.d.y);
             let right = this.createLine(bc.c.x, bc.c.y, bc.d.x, bc.d.y);
 
-            const o = 5;
+            const o = this.offset;
             let topOffset = this.createDirectionalOffset(top, o, 'down');
             let bottomOffset = this.createDirectionalOffset(bottom, o, 'up');
             let leftOffset = this.createDirectionalOffset(left, o, 'right');
