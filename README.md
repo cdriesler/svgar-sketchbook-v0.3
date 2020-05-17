@@ -1,4 +1,4 @@
-# Monads
+# Svgar Sketchbook
 
 Ongoing ui/ux sketches for design protocols and automation tools.
 
